@@ -12,8 +12,6 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 public class Artist implements Result, Serializable {
   public final static ResultType RESULT_TYPE = ResultType.ARTIST;
@@ -47,44 +45,44 @@ public class Artist implements Result, Serializable {
     this.name = name;
   }
 
-  public Optional<List<Artist>> getRelatedArtists() {
-    return Optional.ofNullable(relatedArtists);
+  public List<Artist> getRelatedArtists() {
+    return relatedArtists;
   }
 
-  public OptionalInt getTotalAlbums() {
-    return OptionalInt.of(totalAlbums);
+  public int getTotalAlbums() {
+    return totalAlbums;
   }
 
-  public Optional<List<Track>> getTopTracks() {
-    return Optional.ofNullable(topTracks);
+  public List<Track> getTopTracks() {
+    return topTracks;
   }
 
   public String getName() {
     return name;
   }
 
-  public Optional<String> getArtistArtUrl() {
-    return Optional.ofNullable(artistArtUrl);
+  public String getArtistArtUrl() {
+    return artistArtUrl;
   }
 
-  public Optional<List<ArtRef>> getArtistArtRefs() {
-    return Optional.ofNullable(artistArtRefs);
+  public List<ArtRef> getArtistArtRefs() {
+    return artistArtRefs;
   }
 
-  public Optional<String> getArtistId() {
-    return Optional.ofNullable(artistId);
+  public String getArtistId() {
+    return artistId;
   }
 
-  public Optional<Attribution> getArtistBioAttribution() {
-    return Optional.ofNullable(artistBioAttribution);
+  public Attribution getArtistBioAttribution() {
+    return artistBioAttribution;
   }
 
-  public Optional<String> getArtistBio() {
-    return Optional.ofNullable(artistBio);
+  public String getArtistBio() {
+    return artistBio;
   }
 
-  public Optional<List<Album>> getAlbums() {
-    return Optional.ofNullable(albums);
+  public List<Album> getAlbums() {
+    return albums;
   }
 
   @Override

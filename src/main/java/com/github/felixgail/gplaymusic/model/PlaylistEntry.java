@@ -1,6 +1,7 @@
 package com.github.felixgail.gplaymusic.model;
 
 import com.github.felixgail.gplaymusic.api.GPlayMusic;
+import com.github.felixgail.gplaymusic.api.GPlayServiceTools;
 import com.github.felixgail.gplaymusic.model.requests.mutations.MutationFactory;
 import com.github.felixgail.gplaymusic.model.requests.mutations.Mutator;
 import com.google.gson.Gson;
@@ -10,7 +11,7 @@ import com.google.gson.annotations.Expose;
 import java.io.IOException;
 import java.io.Serializable;
 
-public class PlaylistEntry implements Serializable {
+public class PlaylistEntry implements Serializable, Comparable<PlaylistEntry> {
   public final static String BATCH_URL = "plentriesbatch";
   private final static Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -114,7 +115,7 @@ public class PlaylistEntry implements Serializable {
       throws IOException {
     Mutator mutator = new Mutator(MutationFactory.
         getReorderPlaylistEntryMutation(this, preceding, following));
-    GPlayMusic.getApiInstance().getService().makeBatchCall(BATCH_URL, mutator);
+    GPlayServiceTools.makeBatchCall(GPlayMusic.getApiInstance().getService(), BATCH_URL, mutator);
     String tmp = getAbsolutePosition();
     if (preceding != null && compareTo(preceding) < 0) {
       setAbsolutePosition(preceding.getAbsolutePosition());
@@ -126,6 +127,7 @@ public class PlaylistEntry implements Serializable {
     }
   }
 
+  @Override
   public int compareTo(PlaylistEntry entry) {
     return getAbsolutePosition().compareTo(entry.getAbsolutePosition());
   }

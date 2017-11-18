@@ -2,6 +2,7 @@ package com.github.felixgail.gplaymusic.model;
 
 import com.fasterxml.uuid.Generators;
 import com.github.felixgail.gplaymusic.api.GPlayMusic;
+import com.github.felixgail.gplaymusic.api.GPlayServiceTools;
 import com.github.felixgail.gplaymusic.cache.Cache;
 import com.github.felixgail.gplaymusic.cache.PrivatePlaylistEntriesCache;
 import com.github.felixgail.gplaymusic.model.enums.ResultType;
@@ -16,12 +17,13 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 //TODO: Split into Public and Private Playlist. What to do about magic playlists?
 public class Playlist implements Result, Serializable {
@@ -75,10 +77,14 @@ public class Playlist implements Result, Serializable {
   }
 
   public Playlist(String id) throws IOException {
-    Optional<Playlist> playlistOptional = GPlayMusic.getApiInstance().listPlaylists()
-        .stream().filter(p -> p.getId().equals(id)).findFirst();
-    if (playlistOptional.isPresent()) {
-      Playlist remote = playlistOptional.get();
+    Playlist remote = null;
+    for (Playlist p : GPlayMusic.getApiInstance().listPlaylists()) {
+      if (p.getId().equals(id)) {
+        remote = p;
+        break;
+      }
+    }
+    if (remote != null) {
       this.name = remote.name;
       this.id = remote.id;
       this.shareState = remote.shareState;
@@ -114,7 +120,7 @@ public class Playlist implements Result, Serializable {
       throws IOException {
     Mutator mutator = new Mutator(MutationFactory.getAddPlaylistMutation(name, description, shareState));
     String systemTime = Long.toString(System.currentTimeMillis());
-    MutationResponse response = GPlayMusic.getApiInstance().getService().makeBatchCall(BATCH_URL, mutator);
+    MutationResponse response = GPlayServiceTools.makeBatchCall(GPlayMusic.getApiInstance().getService(), BATCH_URL, mutator);
     String id = response.getItems().get(0).getId();
     return new Playlist(name, id, (shareState == null ? PlaylistShareState.PRIVATE : shareState),
         description, PlaylistType.USER_GENERATED, systemTime, systemTime);
@@ -254,7 +260,7 @@ public class Playlist implements Result, Serializable {
       current = next;
       next = Generators.timeBasedGenerator().generate();
     }
-    MutationResponse response = GPlayMusic.getApiInstance().getService().makeBatchCall(PlaylistEntry.BATCH_URL, mutator);
+    MutationResponse response = GPlayServiceTools.makeBatchCall(GPlayMusic.getApiInstance().getService(), PlaylistEntry.BATCH_URL, mutator);
     Playlist.updateCache();
   }
 
@@ -284,12 +290,18 @@ public class Playlist implements Result, Serializable {
 
   private List<PlaylistEntry> getContentsForUserGeneratedPlaylist(int maxResults)
       throws IOException {
-    return cache.getStream()
-        .filter(entry -> entry.getPlaylistId().equals(getId()))
-        .filter(entry -> !entry.isDeleted())
-        .sorted(PlaylistEntry::compareTo)
-        .limit(maxResults > 0 ? maxResults : Long.MAX_VALUE)
-        .collect(Collectors.toList());
+    List<PlaylistEntry> result = new ArrayList<>();
+    for (PlaylistEntry entry : cache.get()) {
+      if (entry.getPlaylistId().equals(getId()) && !entry.isDeleted()) {
+        result.add(entry);
+      }
+    }
+    Collections.sort(result);
+    if (maxResults > 0) {
+      result = result.subList(0, maxResults);
+    }
+
+    return result;
   }
 
   private List<PlaylistEntry> getContentsForSharedPlaylist(int maxResults)

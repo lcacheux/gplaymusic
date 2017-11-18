@@ -36,8 +36,11 @@ public class StationSeed implements Serializable {
 
   public StationSeed(Artist artist) {
     this.seedType = StationSeedType.ARTIST;
-    this.seedId = artist.getArtistId()
-        .orElseThrow(() -> new IllegalArgumentException("ArtistID not present. Unable to create seed"));
+    if (artist.getArtistId() != null) {
+      this.seedId = artist.getArtistId();
+    } else {
+      throw new IllegalArgumentException("ArtistID not present. Unable to create seed");
+    }
   }
 
   public StationSeed(Playlist playlist) {
@@ -59,8 +62,11 @@ public class StationSeed implements Serializable {
   @Deprecated
   public StationSeed(Station curatedStation) {
     this.seedType = StationSeedType.CURATED_STATION;
-    this.seedId = curatedStation.getClientId()
-        .orElseThrow(() -> new IllegalArgumentException("Station does not contain a clientID"));
+    if (curatedStation.getClientId() != null) {
+      this.seedId = curatedStation.getClientId();
+    } else {
+      throw new IllegalArgumentException("Station does not contain a clientID");
+    }
   }
 
   public StationSeed(Track track) {

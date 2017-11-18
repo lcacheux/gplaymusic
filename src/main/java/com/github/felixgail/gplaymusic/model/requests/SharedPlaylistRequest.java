@@ -5,6 +5,7 @@ import com.github.felixgail.gplaymusic.util.language.Language;
 import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ public class SharedPlaylistRequest implements Serializable {
     if (maxResults >= 0 && maxResults <= 1000) {
       map.put("max-results", String.valueOf(maxResults));
     }
-    entries = Arrays.asList(map);
+    entries = new ArrayList<>();
+    entries.add(map);
   }
 }

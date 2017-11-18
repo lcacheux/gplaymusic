@@ -5,12 +5,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract class Cache<T> {
-  private List<T> cache = Collections.synchronizedList(new LinkedList<>());
+  private List<T> cache = new LinkedList<>();
   private boolean ready = false;
   private boolean useCache = true;
 
@@ -66,14 +63,9 @@ public abstract class Cache<T> {
     return cache;
   }
 
-  public List<T> getFiltered(Predicate<? super T> predicate) throws IOException {
+  public List<T> get() throws IOException {
     initialize();
-    return cache.stream().filter(predicate).collect(Collectors.toList());
-  }
-
-  public Stream<T> getStream() throws IOException {
-    initialize();
-    return cache.stream();
+    return cache;
   }
 
   public void initialize() throws IOException {

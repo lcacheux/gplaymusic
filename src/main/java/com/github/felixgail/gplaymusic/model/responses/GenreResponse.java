@@ -11,7 +11,7 @@ public class GenreResponse implements Serializable {
   @Expose
   private List<Genre> genres;
 
-  public Optional<List<Genre>> getGenres() {
-    return Optional.ofNullable(genres);
+  public List<Genre> getGenres() {
+    return genres;
   }
 }

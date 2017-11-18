@@ -51,10 +51,13 @@ public class NetworkPrettyPrinter {
       buffer.writeUtf8("Response Information:\n");
       buffer.writeUtf8("Code: ").writeUtf8(String.valueOf(response.code()));
       buffer.writeUtf8("\nHeaders:\n");
-      response.headers().toMultimap().forEach((key, value) -> {
+      for (String key : response.headers().toMultimap().keySet()) {
+        List<String> value = response.headers().toMultimap().get(key);
         buffer.writeUtf8("\t").writeUtf8(key).writeUtf8(":\n");
-        value.forEach(v -> buffer.writeUtf8("\t\t").writeUtf8(v).writeUtf8("\n"));
-      });
+        for (String v : value) {
+          buffer.writeUtf8("\t\t").writeUtf8(v).writeUtf8("\n");
+        }
+      }
       buffer.writeUtf8("\n\nBody:\n");
       try {
         BufferedSource source = response.body().source();

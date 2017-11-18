@@ -170,15 +170,4 @@ public interface GPlayService {
   Call<Artist> getArtist(@Query("nid") String artistID, @Query("include-albums") boolean includeAlbums,
                          @Query("num-top-tracks") int numTopTracks,
                          @Query("num-related-artist") int numRelArtist);
-
-  default MutationResponse makeBatchCall(String path, Mutator body)
-      throws IOException {
-    Response<MutationResponse> response = batchCall("sj/v2.5/" + path, body).execute();
-    if (!response.body().checkSuccess()) {
-      NetworkException exception = new NetworkException(400, Language.get("network.GenericError"));
-      exception.setResponse(response.raw());
-      throw exception;
-    }
-    return response.body();
-  }
 }

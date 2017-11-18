@@ -1,5 +1,7 @@
 package com.github.felixgail.gplaymusic.model.requests;
 
+import android.text.TextUtils;
+
 import com.github.felixgail.gplaymusic.model.enums.ResultType;
 
 import java.util.Arrays;
@@ -28,6 +30,6 @@ public class SearchTypes {
 
   @Override
   public String toString() {
-    return types.stream().map(t -> Integer.toString(t.getValue())).collect(Collectors.joining(","));
+    return TextUtils.join(",", types);
   }
 }

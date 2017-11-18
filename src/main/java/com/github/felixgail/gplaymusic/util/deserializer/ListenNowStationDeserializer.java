@@ -21,7 +21,7 @@ public class ListenNowStationDeserializer implements JsonDeserializer<ListenNowS
     ListenNowStation station = gson.fromJson(je, ListenNowStation.class);
     JsonArray seeds = content.getAsJsonObject("id").getAsJsonArray("seeds");
     for (JsonElement seed : seeds) {
-      station.addSeed(jdc.deserialize(seed, StationSeed.class));
+      station.addSeed((StationSeed) jdc.deserialize(seed, StationSeed.class));
     }
     return station;
   }

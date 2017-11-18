@@ -13,23 +13,17 @@ public class ArtRef {
   private String aspectRatio;
   @Expose
   private Autogen autogen;
-  @Expose
-  private ColorStyles colorStyles;
-
-  public Optional<ColorStyles> getColorStyles() {
-    return Optional.ofNullable(colorStyles);
-  }
 
   public String getUrl() {
     return url;
   }
 
-  public Optional<String> getAspectRatio() {
-    return Optional.ofNullable(aspectRatio);
+  public String getAspectRatio() {
+    return aspectRatio;
   }
 
-  public Optional<Autogen> isAutogen() {
-    return Optional.ofNullable(autogen);
+  public Autogen isAutogen() {
+    return autogen;
   }
 
   @JsonAdapter(AutogenEnumDeserializer.class)

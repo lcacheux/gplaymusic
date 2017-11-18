@@ -11,20 +11,19 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Base64;
+import android.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 public abstract class Signable {
   protected static final Map<String, String> EMPTY_MAP = new HashMap<>();
   protected static final Map<String, String> STATION_MAP = new HashMap<>();
-  private final static byte[] s1 = Base64.getDecoder()
+  private final static byte[] s1 = Base64
       .decode("VzeC4H4h+T2f0VI180nVX8x+Mb5HiTtGnKgH52Otj8" +
-          "ZCGDz9jRWyHb6QXK0JskSiOgzQfwTY5xgLLSdUSreaLVMsVVWfxfa8Rw==");
-  private final static byte[] s2 = Base64.getDecoder()
+          "ZCGDz9jRWyHb6QXK0JskSiOgzQfwTY5xgLLSdUSreaLVMsVVWfxfa8Rw==", Base64.DEFAULT);
+  private final static byte[] s2 = Base64
       .decode("ZAPnhUkYwQ6y5DdQxWThbvhJHN8msQ1rqJw0ggKdufQjelrKuiG" +
-          "GJI30aswkgCWTDyHkTGK9ynlqTkJ5L4CiGGUabGeo8M6JTQ==");
+          "GJI30aswkgCWTDyHkTGK9ynlqTkJ5L4CiGGUabGeo8M6JTQ==", Base64.DEFAULT);
   private final static byte[] key;
 
   static {
@@ -34,7 +33,9 @@ public abstract class Signable {
   static {
     int length = Math.min(s1.length, s2.length);
     char[] zipped = new char[length];
-    IntStream.range(0, length).forEach(i -> zipped[i] = (char) (s1[i] ^ s2[i]));
+    for (int i = 0; i < length; i++) {
+      zipped[i] = (char) (s1[i] ^ s2[i]);
+    }
     String helperString = new String(zipped);
     try {
       key = helperString.getBytes("US-ASCII");
@@ -57,7 +58,7 @@ public abstract class Signable {
       String slt = String.valueOf(System.currentTimeMillis() * 1000);
       byte[] value = (id + slt).getBytes("UTF-8");
       byte[] sigBytes = mac.doFinal(value);
-      byte[] fullSig = Base64.getUrlEncoder().encode(sigBytes);
+      byte[] fullSig = Base64.encode(sigBytes, Base64.URL_SAFE);
       byte[] shortened = Arrays.copyOf(fullSig, fullSig.length - 1);
       String sig = new String(shortened, "UTF-8");
       return new Signature(sig, slt);

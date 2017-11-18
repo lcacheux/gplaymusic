@@ -24,7 +24,6 @@ import com.github.felixgail.gplaymusic.model.responses.ListResult;
 import com.github.felixgail.gplaymusic.model.responses.Result;
 import com.github.felixgail.gplaymusic.model.responses.SearchResponse;
 import com.github.felixgail.gplaymusic.util.TokenProvider;
-import com.github.felixgail.gplaymusic.util.deserializer.ColorDeserializer;
 import com.github.felixgail.gplaymusic.util.deserializer.ConfigDeserializer;
 import com.github.felixgail.gplaymusic.util.deserializer.ListenNowStationDeserializer;
 import com.github.felixgail.gplaymusic.util.deserializer.ResultDeserializer;
@@ -42,14 +41,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import svarzee.gps.gpsoauth.AuthToken;
 
 import javax.validation.constraints.NotNull;
-import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 /**
  * The main API, wrapping calls to the service.
@@ -172,8 +169,10 @@ public final class GPlayMusic {
    */
   public void deletePlaylistEntries(Collection<PlaylistEntry> entries) throws IOException {
     Mutator mutator = new Mutator();
-    entries.forEach(e -> mutator.addMutation(MutationFactory.getDeletePlaylistEntryMutation(e)));
-    service.makeBatchCall(PlaylistEntry.BATCH_URL, mutator);
+    for (PlaylistEntry e : entries) {
+      mutator.addMutation(MutationFactory.getDeletePlaylistEntryMutation(e));
+    }
+    GPlayServiceTools.makeBatchCall(service, PlaylistEntry.BATCH_URL, mutator);
     Playlist.getCache().remove(entries);
   }
 
@@ -188,7 +187,7 @@ public final class GPlayMusic {
     for (Playlist playlist : playlists) {
       mutator.addMutation(MutationFactory.getDeletePlaylistMutation(playlist));
     }
-    service.makeBatchCall(Playlist.BATCH_URL, mutator);
+    GPlayServiceTools.makeBatchCall(service, Playlist.BATCH_URL, mutator);
   }
 
   public void deleteStations(Station... stations)
@@ -197,7 +196,7 @@ public final class GPlayMusic {
     for (Station station : stations) {
       mutator.addMutation(MutationFactory.getDeleteStationMutation(station));
     }
-    service.makeBatchCall(Station.BATCH_URL, mutator);
+    GPlayServiceTools.makeBatchCall(service, Station.BATCH_URL, mutator);
   }
 
   public List<Station> listStations()
@@ -380,8 +379,7 @@ public final class GPlayMusic {
         GsonBuilder gsonBuilder = new GsonBuilder()
             .registerTypeAdapter(Result.class, new ResultDeserializer())
             .registerTypeAdapter(Config.class, new ConfigDeserializer())
-            .registerTypeAdapter(ListenNowStation.class, new ListenNowStationDeserializer())
-            .registerTypeAdapter(Color.class, new ColorDeserializer());
+            .registerTypeAdapter(ListenNowStation.class, new ListenNowStationDeserializer());
 
         if (this.httpClientBuilder == null) {
           this.httpClientBuilder = getDefaultHttpBuilder();
@@ -424,13 +422,14 @@ public final class GPlayMusic {
             .addParameter("tier", config.getSubscription().getValue());
 
         if (androidID == null) {
-          Optional<DeviceInfo> optional =
-              gPlay.getRegisteredDevices().toList().stream()
-                  .filter(deviceInfo -> (deviceInfo.getType().equals("ANDROID")))
-                  .findFirst();
-          if (optional.isPresent()) {
-            config.setAndroidID(optional.get().getId());
-          } else {
+          boolean found = false;
+          for (DeviceInfo deviceInfo : gPlay.getRegisteredDevices().toList()) {
+            if (deviceInfo.getType().equals("ANDROID")) {
+              config.setAndroidID(deviceInfo.getId());
+              found = true;
+            }
+          }
+          if (!found) {
             throw new InitializationException(Language.get("api.init.NoAndroidId"));
           }
         } else {

@@ -1,5 +1,7 @@
 package com.github.felixgail.gplaymusic.model;
 
+import android.provider.MediaStore;
+
 import com.github.felixgail.gplaymusic.api.GPlayMusic;
 import com.github.felixgail.gplaymusic.cache.LibraryTrackCache;
 import com.github.felixgail.gplaymusic.exceptions.NetworkException;
@@ -20,14 +22,9 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 public class Track extends Signable implements Result, Serializable {
   public final static ResultType RESULT_TYPE = ResultType.TRACK;
@@ -138,8 +135,10 @@ public class Track extends Signable implements Result, Serializable {
     if (trackID.startsWith("T")) {
       track = GPlayMusic.getApiInstance().getService().fetchTrack(trackID).execute().body();
     } else {
-      track = libraryTrackCache.find(trackID).orElseThrow(() ->
-          new IllegalArgumentException(String.format("No track with id '%s' found.", trackID)));
+      track = libraryTrackCache.find(trackID);
+      if (track == null) {
+        throw new IllegalArgumentException(String.format("No track with id '%s' found.", trackID));
+      }
     }
     if (track == null || track.getID() == null) {
       throw new IOException(String.format("'%s' did not return a valid track", trackID));
@@ -167,8 +166,8 @@ public class Track extends Signable implements Result, Serializable {
     return albumArtist;
   }
 
-  public OptionalInt getYear() {
-    return OptionalInt.of(year);
+  public int getYear() {
+    return year;
   }
 
   public int getTrackNumber() {
@@ -176,20 +175,20 @@ public class Track extends Signable implements Result, Serializable {
   }
 
   //TODO: Return genre instead of string
-  public Optional<String> getGenre() {
-    return Optional.ofNullable(genre);
+  public String getGenre() {
+    return genre;
   }
 
   public Long getDurationMillis() {
     return Long.parseLong(durationMillis);
   }
 
-  public Optional<List<ArtRef>> getAlbumArtRef() {
-    return Optional.ofNullable(albumArtRef);
+  public List<ArtRef> getAlbumArtRef() {
+    return albumArtRef;
   }
 
-  public Optional<List<ArtRef>> getArtistArtRef() {
-    return Optional.ofNullable(artistArtRef);
+  public List<ArtRef> getArtistArtRef() {
+    return artistArtRef;
   }
 
   public int getDiscNumber() {
@@ -200,55 +199,59 @@ public class Track extends Signable implements Result, Serializable {
     return Long.parseLong(estimatedSize);
   }
 
-  public Optional<String> getTrackType() {
-    return Optional.ofNullable(trackType);
+  public String getTrackType() {
+    return trackType;
   }
 
   /**
    * Returns how often the song has been played. Not valid, when song has been fetched via
    * {@link Track#getTrack(String)} as the server response does not contain this key.
    */
-  public OptionalInt getPlayCount() {
-    return OptionalInt.of(playCount);
+  public int getPlayCount() {
+    return playCount;
   }
 
-  public Optional<String> getRating() {
-    return Optional.ofNullable(rating);
+  public String getRating() {
+    return rating;
   }
 
-  public OptionalInt getBeatsPerMinute() {
-    return OptionalInt.of(beatsPerMinute);
+  public int getBeatsPerMinute() {
+    return beatsPerMinute;
   }
 
-  public Optional<String> getClientId() {
-    return Optional.ofNullable(clientId);
+  public String getClientId() {
+    return clientId;
   }
 
-  public Optional<String> getComment() {
-    return Optional.ofNullable(comment);
+  public String getComment() {
+    return comment;
   }
 
   @Override
   public String getID() {
-    return getStoreId().orElseGet(
-        () -> getUuid().orElseThrow(
-            () -> new NullPointerException("Track contains neither StoreID nor UUID.")));
+    if (getStoreId() != null) {
+      return getStoreId();
+    } else if (getUuid() != null) {
+      return getUuid();
+    } else {
+      throw new NullPointerException("Track contains neither StoreID nor UUID.");
+    }
   }
 
-  public Optional<String> getStoreId() {
-    return Optional.ofNullable(storeId);
+  public String getStoreId() {
+    return storeId;
   }
 
   public String getAlbumId() {
     return albumId;
   }
 
-  public Optional<List<String>> getArtistId() {
-    return Optional.ofNullable(artistId);
+  public List<String> getArtistId() {
+    return artistId;
   }
 
-  public Optional<String> getNid() {
-    return Optional.ofNullable(nid);
+  public String getNid() {
+    return nid;
   }
 
   public boolean isTrackAvailableForSubscription() {
@@ -264,44 +267,44 @@ public class Track extends Signable implements Result, Serializable {
     return albumAvailableForPurchase;
   }
 
-  public Optional<String> getExplicitType() {
-    return Optional.ofNullable(explicitType);
+  public String getExplicitType() {
+    return explicitType;
   }
 
   public String getWentryID() {
     return wentryID;
   }
 
-  public OptionalInt getTotalTrackCount() {
-    return OptionalInt.of(totalTrackCount);
+  public int getTotalTrackCount() {
+    return totalTrackCount;
   }
 
-  public OptionalInt getTotalDiscCount() {
-    return OptionalInt.of(totalDiscCount);
+  public int getTotalDiscCount() {
+    return totalDiscCount;
   }
 
-  public Optional<String> getLastRatingChangeTimestamp() {
-    return Optional.ofNullable(lastRatingChangeTimestamp);
+  public String getLastRatingChangeTimestamp() {
+    return lastRatingChangeTimestamp;
   }
 
-  public Optional<String> getLastModifiedTimestamp() {
-    return Optional.ofNullable(lastModifiedTimestamp);
+  public String getLastModifiedTimestamp() {
+    return lastModifiedTimestamp;
   }
 
-  public Optional<String> getContentType() {
-    return Optional.ofNullable(contentType);
+  public String getContentType() {
+    return contentType;
   }
 
-  public Optional<String> getCreationTimestamp() {
-    return Optional.ofNullable(creationTimestamp);
+  public String getCreationTimestamp() {
+    return creationTimestamp;
   }
 
-  public Optional<String> getRecentTimestamp() {
-    return Optional.ofNullable(recentTimestamp);
+  public String getRecentTimestamp() {
+    return recentTimestamp;
   }
 
-  public Optional<String> getUuid() {
-    return Optional.ofNullable(uuid);
+  public String getUuid() {
+    return uuid;
   }
 
   @Override
@@ -360,13 +363,13 @@ public class Track extends Signable implements Result, Serializable {
     if (getWentryID() == null || getWentryID().isEmpty()) {
       throw new IOException(Language.get("track.InvalidWentryID"));
     }
-    if (!getSessionToken().isPresent()) {
+    if (getSessionToken() == null) {
       throw new IOException(Language.get("station.InvalidSessionToken"));
     }
     Map<String, String> map = new HashMap<>();
     map.putAll(STATION_MAP);
     map.put("wentryid", getWentryID());
-    map.put("sesstok", getSessionToken().get());
+    map.put("sesstok", getSessionToken());
     return urlFetcher(quality, Provider.STATION, map);
   }
 
@@ -393,9 +396,9 @@ public class Track extends Signable implements Result, Serializable {
   /**
    * Downloads the song to the provided path. Existing files will be replaced.
    */
-  public void download(StreamQuality quality, Path path) throws IOException {
+  /*public void download(StreamQuality quality, Path path) throws IOException {
     Files.copy(getStationTrackURL(quality).openStream(), path, StandardCopyOption.REPLACE_EXISTING);
-  }
+  }*/
 
   /**
    * Library tracks can only be fetched as whole. To shorten wait times, collected songs are cached.
@@ -420,11 +423,11 @@ public class Track extends Signable implements Result, Serializable {
     this.sessionToken = token;
   }
 
-  private Optional<String> getSessionToken() {
-    return Optional.ofNullable(sessionToken);
+  private String getSessionToken() {
+    return sessionToken;
   }
 
-  public Optional<Video> getVideo() {
-    return Optional.ofNullable(video);
+  public Video getVideo() {
+    return video;
   }
 }

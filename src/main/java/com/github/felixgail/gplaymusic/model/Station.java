@@ -1,6 +1,7 @@
 package com.github.felixgail.gplaymusic.model;
 
 import com.github.felixgail.gplaymusic.api.GPlayMusic;
+import com.github.felixgail.gplaymusic.api.GPlayServiceTools;
 import com.github.felixgail.gplaymusic.exceptions.NetworkException;
 import com.github.felixgail.gplaymusic.model.enums.ResultType;
 import com.github.felixgail.gplaymusic.model.requests.ListStationTracksRequest;
@@ -22,7 +23,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 public class Station implements Result, Serializable {
   public final static ResultType RESULT_TYPE = ResultType.STATION;
@@ -85,7 +85,7 @@ public class Station implements Result, Serializable {
   public static Station create(final StationSeed seed, final String name, final boolean includeTracks)
       throws IOException {
     final Mutator mutator = new Mutator(MutationFactory.getAddStationMutation(name, seed, includeTracks));
-    final MutationResponse response = GPlayMusic.getApiInstance().getService().makeBatchCall(BATCH_URL, mutator);
+    final MutationResponse response = GPlayServiceTools.makeBatchCall(GPlayMusic.getApiInstance().getService(), BATCH_URL, mutator);
     MutationResponse.Item item = response.getItems().get(0);
     if (item.hasStationKey()) {
       return item.getStation();
@@ -97,24 +97,24 @@ public class Station implements Result, Serializable {
     return name;
   }
 
-  public Optional<String> getImageUrl() {
-    return Optional.ofNullable(imageUrl);
+  public String getImageUrl() {
+    return imageUrl;
   }
 
   public boolean isDeleted() {
     return deleted;
   }
 
-  public Optional<String> getLastModifiedTimestamp() {
-    return Optional.ofNullable(lastModifiedTimestamp);
+  public String getLastModifiedTimestamp() {
+    return lastModifiedTimestamp;
   }
 
-  public Optional<String> getRecentTimestamp() {
-    return Optional.ofNullable(recentTimestamp);
+  public String getRecentTimestamp() {
+    return recentTimestamp;
   }
 
-  public Optional<String> getClientId() {
-    return Optional.ofNullable(clientId);
+  public String getClientId() {
+    return clientId;
   }
 
   public StationSeed getSeed() {
@@ -138,8 +138,8 @@ public class Station implements Result, Serializable {
     throw new NullPointerException("Radio does not contain ID or Seeds");
   }
 
-  public Optional<String> getDescription() {
-    return Optional.ofNullable(description);
+  public String getDescription() {
+    return description;
   }
 
   /**
@@ -160,15 +160,17 @@ public class Station implements Result, Serializable {
   public List<Track> getTracks(List<Track> recentlyPlayed, boolean newCall, boolean forceRemoveDoubles)
       throws IOException {
     if (!newCall) {
-      return Optional.of(tracks).orElse(Collections.emptyList());
+      return tracks;
     }
     ListStationTracksRequest request = new ListStationTracksRequest(this, 25, recentlyPlayed);
     Station returnedStation = GPlayMusic.getApiInstance().getService().getFilledStations(request)
         .execute().body().toList().get(0);
-    Optional<List<Track>> trackOptional = Optional.ofNullable(returnedStation.tracks);
+    List<Track> trackOptional = returnedStation.tracks;
     sessionToken = returnedStation.sessionToken;
-    List<Track> tracks = trackOptional.orElse(Collections.emptyList());
-    tracks.forEach(t -> t.setSessionToken(sessionToken));
+    List<Track> tracks = trackOptional;
+    for (Track t : tracks) {
+      t.setSessionToken(sessionToken);
+    }
     if (forceRemoveDoubles) {
       Iterator<Track> iter = tracks.iterator();
       while (iter.hasNext()) {
@@ -183,24 +185,24 @@ public class Station implements Result, Serializable {
     return tracks;
   }
 
-  public Optional<List<ArtRef>> getImageArtRefs() {
-    return Optional.ofNullable(imageArtRefs);
+  public List<ArtRef> getImageArtRefs() {
+    return imageArtRefs;
   }
 
-  public Optional<List<ArtRef>> getCompositeArtRefs() {
-    return Optional.ofNullable(compositeArtRefs);
+  public List<ArtRef> getCompositeArtRefs() {
+    return compositeArtRefs;
   }
 
-  public Optional<List<String>> getContentTypes() {
-    return Optional.ofNullable(contentTypes);
+  public List<String> getContentTypes() {
+    return contentTypes;
   }
 
-  public Optional<String> getByline() {
-    return Optional.ofNullable(byline);
+  public String getByline() {
+    return byline;
   }
 
-  public Optional<String> getSessionToken() {
-    return Optional.ofNullable(sessionToken);
+  public String getSessionToken() {
+    return sessionToken;
   }
 
   @Override

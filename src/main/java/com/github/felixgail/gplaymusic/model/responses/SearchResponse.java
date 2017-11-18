@@ -1,5 +1,7 @@
 package com.github.felixgail.gplaymusic.model.responses;
 
+import android.text.TextUtils;
+
 import com.github.felixgail.gplaymusic.model.Album;
 import com.github.felixgail.gplaymusic.model.Artist;
 import com.github.felixgail.gplaymusic.model.Playlist;
@@ -11,6 +13,7 @@ import com.github.felixgail.gplaymusic.model.listennow.Situation;
 import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,40 +33,87 @@ public class SearchResponse implements Serializable {
   }
 
   public List<Track> getTracks() {
-    return entries.stream().filter(Track.class::isInstance).map(Track.class::cast).collect(Collectors.toList());
+    List<Track> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Result) {
+        result.add((Track) r);
+      }
+    }
+    return result;
   }
 
   public List<Artist> getArtists() {
-    return entries.stream().filter(Artist.class::isInstance).map(Artist.class::cast).collect(Collectors.toList());
+    List<Artist> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Artist) {
+        result.add((Artist) r);
+      }
+    }
+    return result;
   }
 
   public List<Album> getAlbums() {
-    return entries.stream().filter(Album.class::isInstance).map(Album.class::cast).collect(Collectors.toList());
+    List<Album> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Album) {
+        result.add((Album) r);
+      }
+    }
+    return result;
   }
 
   public List<Playlist> getPlaylists() {
-    return entries.stream().filter(Playlist.class::isInstance).map(Playlist.class::cast).collect(Collectors.toList());
+    List<Playlist> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Playlist) {
+        result.add((Playlist) r);
+      }
+    }
+    return result;
   }
 
   public List<Station> getStations() {
-    return entries.stream().filter(Station.class::isInstance).map(Station.class::cast).collect(Collectors.toList());
+    List<Station> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Station) {
+        result.add((Station) r);
+      }
+    }
+    return result;
   }
 
   public List<Situation> getSituations() {
-    return entries.stream().filter(Situation.class::isInstance).map(Situation.class::cast).collect(Collectors.toList());
+    List<Situation> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Situation) {
+        result.add((Situation) r);
+      }
+    }
+    return result;
   }
 
   public List<Video> getVideos() {
-    return entries.stream().filter(Video.class::isInstance).map(Video.class::cast).collect(Collectors.toList());
+    List<Video> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof Video) {
+        result.add((Video) r);
+      }
+    }
+    return result;
   }
 
   public List<PodcastSeries> getPodcastSeries() {
-    return entries.stream().filter(PodcastSeries.class::isInstance).map(PodcastSeries.class::cast).collect(Collectors.toList());
+    List<PodcastSeries> result = new ArrayList<>();
+    for (Result r : entries) {
+      if (r instanceof PodcastSeries) {
+        result.add((PodcastSeries) r);
+      }
+    }
+    return result;
   }
 
   public String string() {
     return "SearchResults:\n\t" +
-        entries.stream().map(Object::toString).collect(Collectors.joining("\n\t"));
+            TextUtils.join("\n\t", entries);
   }
-
 }

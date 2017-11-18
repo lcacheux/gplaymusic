@@ -6,6 +6,7 @@ import com.google.gson.annotations.Expose;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +39,9 @@ public class Genre implements Serializable {
     if (parent != null) {
       id = parent.getId();
     }
+
     return GPlayMusic.getApiInstance().getService()
-        .getGenres(id).execute().body().getGenres().orElse(Collections.emptyList());
+        .getGenres(id).execute().body().getGenres();
   }
 
   /**
@@ -57,26 +59,26 @@ public class Genre implements Serializable {
    * Returns a list of IDs of the child genres (if present) as {@link Optional}. For details see {@link #getId()}.
    * To get the child genres directly use {@link #getChildren()}.
    */
-  public Optional<List<String>> getChildrenIDs() {
-    return Optional.ofNullable(children);
+  public List<String> getChildrenIDs() {
+    return children;
   }
 
-  public Optional<List<Genre>> getChildren() throws IOException {
+  public List<Genre> getChildren() throws IOException {
     if (children != null) {
-      return Optional.of(get(this));
+      return get(this);
     }
-    return Optional.empty();
+    return new ArrayList<>();
   }
 
   /**
    * Returns the ID of the parent genre (if present) as {@link Optional}. For details see {@link #getId()}.
    */
-  public Optional<String> getParentID() {
-    return Optional.ofNullable(parentId);
+  public String getParentID() {
+    return parentId;
   }
 
-  public Optional<List<ArtRef>> getImages() {
-    return Optional.ofNullable(images);
+  public List<ArtRef> getImages() {
+    return images;
   }
 
 }

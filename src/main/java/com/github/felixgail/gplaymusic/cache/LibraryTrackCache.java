@@ -7,8 +7,8 @@ import com.github.felixgail.gplaymusic.model.requests.PagingRequest;
 import com.github.felixgail.gplaymusic.model.responses.ListResult;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class LibraryTrackCache extends Cache<Track> {
@@ -24,8 +24,13 @@ public class LibraryTrackCache extends Cache<Track> {
 
       @Override
       public List<Track> next() throws IOException {
-        return super.next().stream()
-            .filter(t -> !t.getStoreId().isPresent() && t.getUuid().isPresent()).collect(Collectors.toList());
+        List<Track> result = new ArrayList<>();
+        for (Track t : super.next()) {
+          if (t.getStoreId() == null && t.getUuid() == null) {
+            result.add(t);
+          }
+        }
+        return result;
       }
     };
   }
@@ -36,14 +41,14 @@ public class LibraryTrackCache extends Cache<Track> {
     setCache(trackList);
   }
 
-  public Optional<Track> find(String trackID) throws IOException {
-    Optional<Track> trackOptional;
+  public Track find(String trackID) throws IOException {
     if (!isUseCache()) {
       pagingHandler.reset();
     } else {
-      trackOptional = getCurrentCache().stream().filter(t -> t.getID().equals(trackID)).findFirst();
-      if (trackOptional.isPresent()) {
-        return trackOptional;
+      for (Track t : getCurrentCache()) {
+        if (t.getID().equals(trackID)) {
+          return t;
+        }
       }
     }
     while (pagingHandler.hasNext()) {
@@ -52,12 +57,13 @@ public class LibraryTrackCache extends Cache<Track> {
         if (isUseCache()) {
           add(tracks);
         }
-        trackOptional = tracks.stream().filter(t -> t.getID().equals(trackID)).findFirst();
-        if (trackOptional.isPresent()) {
-          return trackOptional;
+        for (Track t : tracks) {
+          if (t.getID().equals(trackID)) {
+            return t;
+          }
         }
       }
     }
-    return Optional.empty();
+    return null;
   }
 }
