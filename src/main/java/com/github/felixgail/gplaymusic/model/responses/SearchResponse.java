@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 //TODO: Add result scores
 public class SearchResponse implements Serializable {
@@ -35,7 +34,7 @@ public class SearchResponse implements Serializable {
   public List<Track> getTracks() {
     List<Track> result = new ArrayList<>();
     for (Result r : entries) {
-      if (r instanceof Result) {
+      if (r instanceof Track) {
         result.add((Track) r);
       }
     }
